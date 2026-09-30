@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --bg-app: #F8FAFC;
   --bg-sidebar: #0B1220;
@@ -35,9 +39,15 @@
   padding: 0;
 }
 
+html, body, #root {
+  min-height: 100dvh;
+  width: 100%;
+  @apply bg-[#F8FAFC] dark:bg-[#0B1220];
+  overscroll-behavior-y: none;
+}
+
 body {
   font-family: 'Inter', sans-serif;
-  background-color: var(--bg-app);
   color: var(--text-primary);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
