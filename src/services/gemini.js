@@ -1,6 +1,8 @@
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
 export async function analyzeRisk(simulationData) {
   try {
-    const response = await fetch('http://localhost:8000/api/analyze-risk', {
+    const response = await fetch(`${API_BASE_URL}/api/analyze-risk`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
