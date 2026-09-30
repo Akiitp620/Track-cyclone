@@ -68,7 +68,7 @@ function App() {
     if (user && (view === 'login' || view === 'register' || view === 'landing')) {
       setView('dashboard');
     } else if (!user && view === 'dashboard') {
-      setView('login');
+      setView('landing');
     }
   }, [user, view, authInitialized]);
 
@@ -458,8 +458,8 @@ function App() {
           </div>
 
           <button
-            onClick={() => {
-              signOut(auth);
+            onClick={async () => {
+              await signOut(auth);
               setView('landing');
             }}
             style={{
