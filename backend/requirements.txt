@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+google-genai
+python-dotenv
+pydantic
+earthengine-api
+google-cloud-aiplatform
+google-cloud-bigquery
+python-multipart
