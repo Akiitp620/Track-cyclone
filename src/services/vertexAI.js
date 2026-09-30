@@ -1,6 +1,8 @@
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
 export async function predictImpact(features) {
   try {
-    const response = await fetch('http://localhost:8000/api/predict-impact', {
+    const response = await fetch(`${API_BASE_URL}/api/predict-impact`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
