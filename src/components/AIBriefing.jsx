@@ -132,7 +132,8 @@ export function AIBriefing({ scenario, results, predictiveImpacts = {}, fullView
         ) : briefing ? (
           <>
             {error && (
-              <div style={{ padding: '8px', background: 'rgba(220,38,38,0.1)', color: 'var(--risk-critical)', fontSize: '12px', marginBottom: '12px', borderRadius: '4px' }}>
+              <div className="flex items-center gap-2 p-3 mb-4 rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 text-amber-800 dark:text-amber-400 text-xs font-medium">
+                <AlertCircle size={14} className="flex-shrink-0" />
                 AI analysis unavailable — showing deterministic scenario analysis.
               </div>
             )}
@@ -166,24 +167,28 @@ export function AIBriefing({ scenario, results, predictiveImpacts = {}, fullView
             <div className="ai-section">
               <div className="ai-section-title">OPERATIONAL ACTION PLAN</div>
               {fullView ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div className="flex flex-col gap-4">
                   {['0-6 HOURS', '6-12 HOURS', '12-24 HOURS'].map(timeframe => {
                     const actions = briefing.recommendedActions?.filter(a => a.timeframe === timeframe);
                     if (!actions || actions.length === 0) return null;
                     return (
-                      <div key={timeframe} style={{ background: 'rgba(0,0,0,0.15)', padding: '12px', borderRadius: '4px', border: '1px solid var(--border)' }}>
-                        <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '8px', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
-                          {timeframe}
+                      <div key={timeframe} className="bg-white dark:bg-[var(--bg-app)] rounded-lg border border-[var(--border)] shadow-sm overflow-hidden">
+                        <div className="px-4 py-2 border-b border-[var(--border)] bg-gray-50 dark:bg-gray-800/50">
+                          <span className="text-xs font-bold text-[var(--text-secondary)] tracking-wider">
+                            {timeframe}
+                          </span>
                         </div>
-                        <div className="ai-list" style={{ gap: '8px' }}>
+                        <div className="p-4 flex flex-col gap-4">
                           {actions.map((action, idx) => (
-                            <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', fontSize: '13px' }}>
-                              <CheckCircle2 size={14} color="var(--primary)" style={{ marginTop: '3px' }} />
-                              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <span style={{ color: 'var(--text-primary)' }}>{action.action}</span>
-                                <span style={{ color: 'var(--text-secondary)', fontSize: '11px', marginTop: '2px' }}>
-                                  <span className={`color-${action.priority.toLowerCase()}`} style={{ fontWeight: 'bold' }}>{action.priority}</span> • {action.asset}
-                                </span>
+                            <div key={idx} className="flex gap-3 items-start">
+                              <CheckCircle2 size={16} color="var(--primary)" className="mt-0.5 flex-shrink-0" />
+                              <div className="flex flex-col">
+                                <span className="text-sm font-medium text-[var(--text-primary)] mb-1">{action.action}</span>
+                                <div className="flex items-center text-xs text-[var(--text-secondary)]">
+                                  <span className={`font-bold color-${action.priority.toLowerCase()}`}>{action.priority}</span>
+                                  <span className="mx-1.5 opacity-50">•</span>
+                                  <span>{action.asset}</span>
+                                </div>
                               </div>
                             </div>
                           ))}
