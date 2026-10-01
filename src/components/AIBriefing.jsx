@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Cpu, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { analyzeRisk } from '../services/gemini';
 
-export function AIBriefing({ scenario, results, predictiveImpacts = {}, fullView = false }) {
+export function AIBriefing({ scenario, results, predictiveImpacts = {}, fullView = false, onGeminiStatus }) {
   const [briefing, setBriefing] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -18,7 +18,7 @@ export function AIBriefing({ scenario, results, predictiveImpacts = {}, fullView
 
       setLoading(true);
       setError(null);
-      
+
       const criticalCount = results.filter(r => r.category === 'CRITICAL').length;
       const highCount = results.filter(r => r.category === 'HIGH').length;
       const popExposed = results.reduce((acc, r) => r.hazard > 0.2 ? acc + r.populationServed : acc, 0);
@@ -51,6 +51,24 @@ export function AIBriefing({ scenario, results, predictiveImpacts = {}, fullView
       };
 
       const generateFallback = () => {
+        const actions = [];
+        const criticalList = results.filter(r => r.category === 'CRITICAL');
+        const highList = results.filter(r => r.category === 'HIGH');
+
+        if (criticalList.length > 0) {
+            criticalList.slice(0, 3).forEach(asset => {
+                actions.push({ timeframe: "0-6 HOURS", priority: "CRITICAL", action: `Immediately secure and evacuate if necessary. Ensure backup systems are online.`, asset: asset.name });
+            });
+        }
+        if (highList.length > 0) {
+            highList.slice(0, 2).forEach(asset => {
+                actions.push({ timeframe: "6-12 HOURS", priority: "HIGH", action: `Deploy repair crews and stage equipment nearby.`, asset: asset.name });
+            });
+        }
+        if (actions.length === 0) {
+            actions.push({ timeframe: "12-24 HOURS", priority: "MEDIUM", action: "Monitor situation and prepare for escalation.", asset: "General Population" });
+        }
+
         return {
           type: 'DETERMINISTIC',
           summary: `Category ${scenario.category} cyclone with ${scenario.windSpeed} km/h winds. Simulated track shift of ${scenario.trackShift} km exposes ${(popExposed/1000000).toFixed(2)}M people.`,
@@ -65,12 +83,7 @@ export function AIBriefing({ scenario, results, predictiveImpacts = {}, fullView
             "Significant rainfall exposure."
           ],
           whyThisMatters: `${criticalCount} critical assets are expected to fail or become inaccessible under current scenario conditions.`,
-          recommendedActions: [
-            { timeframe: "0-6 HOURS", priority: "HIGH", action: "Evacuate high-hazard zones immediately.", asset: "General Population" },
-            { timeframe: "0-6 HOURS", priority: "CRITICAL", action: "Deploy backup generators and test systems.", asset: "Hospitals" },
-            { timeframe: "6-12 HOURS", priority: "HIGH", action: "Close vulnerable bridges and coordinate alternative routing.", asset: "Bridges" },
-            { timeframe: "12-24 HOURS", priority: "MEDIUM", action: "Pre-position repair crews outside hazard boundary.", asset: "Power Grid" }
-          ],
+          recommendedActions: actions,
           confidence: 90
         };
       };
@@ -78,6 +91,7 @@ export function AIBriefing({ scenario, results, predictiveImpacts = {}, fullView
       try {
         const aiData = await analyzeRisk(simulationData);
         if (active) {
+          if (onGeminiStatus) onGeminiStatus('CONNECTED');
           // Cross-reference AI risk values with deterministic results
           // We map over critical assets to ensure AI doesn't modify risk scores
           const sanitizedAssets = (aiData.criticalAssets || []).map(aiAsset => {
@@ -93,6 +107,7 @@ export function AIBriefing({ scenario, results, predictiveImpacts = {}, fullView
       } catch (err) {
         if (active) {
           console.error('AI Briefing Error:', err);
+          if (onGeminiStatus) onGeminiStatus('UNAVAILABLE');
           // Fallback on error
           setBriefing(generateFallback());
           setError(err.message);
@@ -102,8 +117,8 @@ export function AIBriefing({ scenario, results, predictiveImpacts = {}, fullView
       }
     }
 
-    // Call it immediately on change, as the UI waits for "Run Simulation" 
-    // before updating `scenario` props. 
+    // Call it immediately on change, as the UI waits for "Run Simulation"
+    // before updating `scenario` props.
     fetchBriefing();
 
     return () => { active = false; };
@@ -122,7 +137,7 @@ export function AIBriefing({ scenario, results, predictiveImpacts = {}, fullView
           )}
         </div>
       </div>
-      
+
       <div className="panel-body">
         {loading ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '13px' }}>

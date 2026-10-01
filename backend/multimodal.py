@@ -41,14 +41,17 @@ class MultimodalResponseSchema(BaseModel):
 
 def analyze_multimodal_image(image_bytes: bytes, mime_type: str, source: str, scenario: dict, risk_summary: dict, critical_assets: list, high_risk_assets: list, geo_context: dict):
     api_key = os.getenv("GEMINI_API_KEY")
-    model_name = os.getenv("GEMINI_MULTIMODAL_MODEL") or os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    model_name = os.getenv("GEMINI_MULTIMODAL_MODEL") or os.getenv("GEMINI_MODEL", "gemini-flash-latest")
+
+    print(f"GEMINI KEY FOUND: {bool(api_key)}")
+    print(f"MODEL: {model_name}")
 
     if not api_key:
         return _get_demo_response(source)
 
     try:
         client = genai.Client(api_key=api_key)
-        
+
         prompt = f"""
 You are CycloneShield AI's visual disaster-response analysis assistant.
 
@@ -76,7 +79,31 @@ Rules:
 - If the image quality is insufficient, say so.
 - If the image does not contain enough evidence, say so.
 - Treat user-provided/demo images as visual evidence only, not as authoritative geospatial truth.
-- The 'confidence' field should represent confidence in the VISUAL INTERPRETATION only.
+- The 'confidence' field should represent confidence in the VISUAL INTERPRETATION only (0-100).
+
+Return ONLY valid JSON with this exact structure:
+{{
+  "visualSummary": "Detailed string summary",
+  "sourceAssessment": {{
+    "source": "{source}",
+    "imageType": "SATELLITE | DRONE | GROUND | UNKNOWN",
+    "quality": "HIGH | MEDIUM | LOW | LIMITED",
+    "limitations": ["list of strings"]
+  }},
+  "visualObservations": [
+    {{"observation": "string", "confidence": number}}
+  ],
+  "infrastructureConcerns": [
+    {"asset": "string", "concern": "string", "evidence": "string"}
+  ],
+  "exposurePathways": ["list of strings"],
+  "riskContext": ["list of strings"],
+  "operationalConsiderations": [
+    {"priority": "HIGH | MEDIUM | LOW", "action": "string"}
+  ],
+  "uncertainties": ["list of strings"],
+  "confidence": number
+}}
 
 Contextual Data:
 Source Label: {source}
@@ -95,17 +122,47 @@ Geo Context: {json.dumps(geo_context)}
             ],
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
-                response_schema=MultimodalResponseSchema,
-                temperature=0.2,
             )
         )
-        
-        data = json.loads(response.text)
+
+        text = response.text.strip()
+        if text.startswith('```json'):
+            text = text[7:]
+        if text.startswith('```'):
+            text = text[3:]
+        if text.endswith('```'):
+            text = text[:-3]
+        text = text.strip()
+
+        data = json.loads(text)
         return data
 
     except Exception as e:
         print(f"Error in multimodal analysis: {e}")
-        return None
+        return _get_api_error_response(source)
+
+def _get_api_error_response(source: str):
+    return {
+        "visualSummary": "DEMO — Multimodal Gemini analysis unavailable due to API error (e.g., quota exceeded or server unavailable).",
+        "sourceAssessment": {
+            "source": source,
+            "imageType": "UNKNOWN",
+            "quality": "LIMITED",
+            "limitations": ["API error", "Demo mode active"]
+        },
+        "visualObservations": [
+            {
+                "observation": "Visual analysis is disabled due to an API error.",
+                "confidence": 0
+            }
+        ],
+        "infrastructureConcerns": [],
+        "exposurePathways": [],
+        "riskContext": [],
+        "operationalConsiderations": [],
+        "uncertainties": ["All visual interpretation is unavailable."],
+        "confidence": 0
+    }
 
 def _get_demo_response(source: str):
     return {

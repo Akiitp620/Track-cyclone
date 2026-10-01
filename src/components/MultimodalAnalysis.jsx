@@ -96,10 +96,14 @@ export default function MultimodalAnalysis({
 
   return (
     <div className="bg-slate-900 border border-slate-700 rounded-lg overflow-hidden flex flex-col mb-6">
-      <div className="bg-slate-800 p-4 border-b border-slate-700 flex justify-between items-center">
-        <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-          <span className="text-indigo-400">👁️</span> Visual Evidence Analysis
-        </h2>
+      <div className="bg-slate-800 p-4 border-b border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <div>
+          <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2 mb-1">
+            <span className="text-indigo-400">👁️</span> Visual Evidence Analysis
+            <span className="bg-indigo-900/50 text-indigo-300 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border border-indigo-700/50 ml-2 font-mono font-semibold">GEMINI MULTIMODAL</span>
+          </h2>
+          <p className="text-xs text-slate-400">Evidence extracted from user-provided imagery</p>
+        </div>
       </div>
 
       <div className="p-6">
@@ -215,7 +219,7 @@ export default function MultimodalAnalysis({
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-sm text-slate-500 italic">None reported.</p>
+                    <p className="text-sm text-slate-500 italic">No evidence identified.</p>
                   )}
                 </div>
 
@@ -232,7 +236,7 @@ export default function MultimodalAnalysis({
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-sm text-slate-500 italic">None reported.</p>
+                    <p className="text-sm text-slate-500 italic">No evidence identified.</p>
                   )}
                 </div>
 
@@ -249,7 +253,7 @@ export default function MultimodalAnalysis({
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-sm text-slate-500 italic">None reported.</p>
+                    <p className="text-sm text-slate-500 italic">No evidence identified.</p>
                   )}
                 </div>
 
@@ -272,7 +276,7 @@ export default function MultimodalAnalysis({
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-sm text-slate-500 italic">None reported.</p>
+                    <p className="text-sm text-slate-500 italic">No evidence identified.</p>
                   )}
                 </div>
 
@@ -294,7 +298,7 @@ export default function MultimodalAnalysis({
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-sm text-slate-500 italic">None reported.</p>
+                    <p className="text-sm text-slate-500 italic">No evidence identified.</p>
                   )}
                 </div>
 

@@ -15,13 +15,13 @@ def get_bigquery_client():
     global _client, _dataset_id
     if _client is not None:
         return _client, _dataset_id
-        
-    project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
+
+    project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "sanqum")
     dataset = os.getenv("BIGQUERY_DATASET", "cycloneshield")
-    
+
     if not project_id:
         return None, None
-        
+
     try:
         # Relies on Application Default Credentials
         _client = bigquery.Client(project=project_id)
@@ -34,33 +34,80 @@ def get_bigquery_client():
         print(f"BigQuery initialization failed: {e}")
         return None, None
 
+import traceback
+
 def check_status():
     """
     Verifies if BigQuery is connected and the dataset exists.
-    Returns 'connected', 'demo', or 'unavailable'.
+    Returns 'connected', 'demo', or 'unavailable', along with row counts.
     """
     client, dataset_id = get_bigquery_client()
     if not client:
-        return {"status": "unavailable"}
-        
+        return {"status": "unavailable", "infrastructureAssets": 0}
+
     try:
         # Actually test a BigQuery operation: try to get the dataset
+        print(f"Trying to get dataset: {dataset_id}")
         client.get_dataset(dataset_id)
-        
-        # Verify tables exist
+
+        # Verify tables exist and get infrastructure_assets row count
         expected_tables = ["cyclone_events", "infrastructure_assets", "impact_training_features"]
         tables = [t.table_id for t in client.list_tables(dataset_id)]
-        
+
         missing = [t for t in expected_tables if t not in tables]
         if missing:
             print(f"BigQuery missing tables: {missing}")
-            return {"status": "unavailable"}
-            
-        return {"status": "connected", "dataset": dataset_id.split('.')[1]}
+            return {"status": "unavailable", "infrastructureAssets": 0}
+
+        # Get count for infrastructure_assets
+        table = client.get_table(f"{dataset_id}.infrastructure_assets")
+        asset_count = table.num_rows
+
+        return {
+            "status": "connected",
+            "dataset": dataset_id.split('.')[1],
+            "infrastructureAssets": asset_count
+        }
     except Exception as e:
         print(f"BigQuery status check failed: {e}")
+        traceback.print_exc()
         # If dataset doesn't exist or other network errors occur
-        return {"status": "unavailable"}
+        return {"status": "unavailable", "infrastructureAssets": 0}
+
+def fetch_infrastructure_assets():
+    """
+    Fetches infrastructure assets from BigQuery and maps them to the expected frontend schema.
+    Returns a list of dictionaries.
+    """
+    client, dataset_id = get_bigquery_client()
+    if not client:
+        return None
+
+    query = f"SELECT * FROM `{dataset_id}.infrastructure_assets`"
+    try:
+        query_job = client.query(query)
+        results = []
+        for row in query_job:
+            results.append({
+                "id": row.asset_id,
+                "name": row.name,
+                "type": row.asset_type,
+                "baseVulnerability": row.base_vulnerability,
+                "location": row.location_class,
+                "x": (row.longitude - 85.0) * 40.0,
+                "y": (21.5 - row.latitude) * 50.0,
+                "lng": row.longitude,
+                "lat": row.latitude,
+                "populationServed": row.population_served,
+                "criticality": row.criticality,
+                "accessRoutes": row.access_routes,
+                "coastalExposure": 0.0 # Will be populated by Earth Engine if available
+            })
+        print(f"BigQuery query started: fetched {len(results)} assets")
+        return results
+    except Exception as e:
+        print(f"BigQuery asset query failed: {e}")
+        return None
 
 def prepare_training_features(event_id: str, asset_id: str, scenario: dict, features: dict):
     """
@@ -92,7 +139,7 @@ def insert_training_features(features_list: list):
     client, dataset_id = get_bigquery_client()
     if not client:
         return False
-        
+
     table_id = f"{dataset_id}.impact_training_features"
     try:
         errors = client.insert_rows_json(table_id, features_list)
@@ -112,7 +159,7 @@ def query_training_features(limit: int = 100):
     client, dataset_id = get_bigquery_client()
     if not client:
         return []
-        
+
     query = f"SELECT * FROM `{dataset_id}.impact_training_features` LIMIT {limit}"
     try:
         query_job = client.query(query)
