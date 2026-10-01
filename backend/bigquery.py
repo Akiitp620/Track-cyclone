@@ -16,10 +16,10 @@ def get_bigquery_client():
     if _client is not None:
         return _client, _dataset_id
 
-    project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "sanqum")
-    dataset = os.getenv("BIGQUERY_DATASET", "cycloneshield")
+    project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "sanqum").strip()
+    dataset = os.getenv("BIGQUERY_DATASET", "cycloneshield").strip()
 
-    if not project_id:
+    if not project_id or not dataset:
         return None, None
 
     try:
