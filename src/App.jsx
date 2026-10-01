@@ -114,7 +114,7 @@ function App() {
 
   const [assets, setAssets] = useState(INFRASTRUCTURE_ASSETS);
   const [assetSource, setAssetSource] = useState('demo');
-  const [assetCount, setAssetCount] = useState(INFRASTRUCTURE_ASSETS.length);  useEffect(() => {
+  const [assetCount, setAssetCount] = useState(INFRASTRUCTURE_ASSETS.length); useEffect(() => {
     async function loadData() {
       let currentAssets = INFRASTRUCTURE_ASSETS;
       let bqConnected = false;
@@ -256,10 +256,12 @@ function App() {
     setIsSimulating(true);
 
     try {
-      const satResponse = await fetch('http://localhost:8000/api/satellite-evidence', {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+      const satResponse = await fetch(`${API_BASE_URL}/api/satellite-evidence`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assets: infrastructureData })
+        body: JSON.stringify({ assets })
       });
       const satData = await satResponse.json();
       setSatelliteEvidence(satData);
@@ -1225,7 +1227,7 @@ function App() {
                         <div className="flex justify-between items-center p-2 bg-[var(--bg-app)] rounded border border-[var(--border)]">
                           <span className="text-xs font-medium text-[var(--text-primary)]">Temporal Comparison</span>
                           <span className="text-[11px] font-bold text-[var(--text-secondary)]">
-                             {satelliteEvidence.comparisonAvailable ? 'AVAILABLE (≥2 SCENES)' : 'UNAVAILABLE'}
+                            {satelliteEvidence.comparisonAvailable ? 'AVAILABLE (≥2 SCENES)' : 'UNAVAILABLE'}
                           </span>
                         </div>
                       </div>
@@ -1326,7 +1328,7 @@ function App() {
 
             </div>
           )}
-                   {/* DATA & METHOD */}
+          {/* DATA & METHOD */}
           {activeTab === 'DATA & METHOD' && (
             <div className="panel" style={{ flex: 1, minHeight: 0 }}>
               <div className="panel-header">
@@ -1365,7 +1367,7 @@ function App() {
                     </div>
 
                     <div className="flex justify-end pr-[12.5%] -my-3 z-0 relative">
-                       <ArrowDown className="text-slate-300" size={20} />
+                      <ArrowDown className="text-slate-300" size={20} />
                     </div>
 
                     {/* ROW 2 */}
@@ -1420,47 +1422,47 @@ function App() {
                 <section>
                   <h3 className="text-[14px] font-bold text-[var(--text-primary)] mb-4 tracking-wide uppercase">Data Sources & Features</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                     <div className="bg-[var(--bg-app)] border border-[var(--border)] rounded-lg p-5">
-                        <h4 className="text-xs font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2"><Database size={14} /> BIGQUERY DATASET</h4>
-                        <div className="text-[11px] mb-2 font-bold text-blue-600">sanqum.cycloneshield.infrastructure_assets</div>
-                        <ul className="text-xs space-y-1 text-[var(--text-secondary)]">
-                           <li>• Provides 35 verified asset records</li>
-                           <li>• Coordinates (latitude/longitude)</li>
-                           <li>• Asset Type (Hospitals, Bridges, Power)</li>
-                           <li>• Baseline Vulnerability & Criticality</li>
-                           <li>• Population Served & Access Routes</li>
-                        </ul>
-                     </div>
-                     <div className="bg-[var(--bg-app)] border border-[var(--border)] rounded-lg p-5">
-                        <h4 className="text-xs font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2"><Globe size={14} /> EARTH ENGINE (EE)</h4>
-                        <div className="text-[11px] mb-2 font-bold text-blue-600">USGS/SRTMGL1_003 & COPERNICUS/S1_GRD</div>
-                        <ul className="text-xs space-y-1 text-[var(--text-secondary)]">
-                           <li>• Extracts geographic context live from EE</li>
-                           <li>• USGS 30m DEM for elevation at asset coords</li>
-                           <li>• Sentinel-1 SAR for radar backscatter evidence</li>
-                           <li>• Indicates potential flooding/inundation regions</li>
-                        </ul>
-                     </div>
-                     <div className="bg-[var(--bg-app)] border border-[var(--border)] rounded-lg p-5">
-                        <h4 className="text-xs font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2"><Activity size={14} /> VERTEX AI</h4>
-                        <div className="text-[11px] mb-2 font-bold text-blue-600">Predictive Impact Model (Optional)</div>
-                        <ul className="text-xs space-y-1 text-[var(--text-secondary)]">
-                           <li>• Machine learning predictive capabilities</li>
-                           <li>• Trained on historical failure events</li>
-                           <li>• Provides damage probability & severity</li>
-                           <li>• Only used if endpoint is actively deployed</li>
-                        </ul>
-                     </div>
-                     <div className="bg-[var(--bg-app)] border border-[var(--border)] rounded-lg p-5">
-                        <h4 className="text-xs font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2"><Brain size={14} /> GEMINI AI</h4>
-                        <div className="text-[11px] mb-2 font-bold text-blue-600">LLM Generation (gemini-flash)</div>
-                        <ul className="text-xs space-y-1 text-[var(--text-secondary)]">
-                           <li>• Interacts with structural simulation results</li>
-                           <li>• Identifies core reasons for specific asset risks</li>
-                           <li>• Generates human-readable situation briefings</li>
-                           <li>• Proposes timeline-based emergency actions</li>
-                        </ul>
-                     </div>
+                    <div className="bg-[var(--bg-app)] border border-[var(--border)] rounded-lg p-5">
+                      <h4 className="text-xs font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2"><Database size={14} /> BIGQUERY DATASET</h4>
+                      <div className="text-[11px] mb-2 font-bold text-blue-600">sanqum.cycloneshield.infrastructure_assets</div>
+                      <ul className="text-xs space-y-1 text-[var(--text-secondary)]">
+                        <li>• Provides 35 verified asset records</li>
+                        <li>• Coordinates (latitude/longitude)</li>
+                        <li>• Asset Type (Hospitals, Bridges, Power)</li>
+                        <li>• Baseline Vulnerability & Criticality</li>
+                        <li>• Population Served & Access Routes</li>
+                      </ul>
+                    </div>
+                    <div className="bg-[var(--bg-app)] border border-[var(--border)] rounded-lg p-5">
+                      <h4 className="text-xs font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2"><Globe size={14} /> EARTH ENGINE (EE)</h4>
+                      <div className="text-[11px] mb-2 font-bold text-blue-600">USGS/SRTMGL1_003 & COPERNICUS/S1_GRD</div>
+                      <ul className="text-xs space-y-1 text-[var(--text-secondary)]">
+                        <li>• Extracts geographic context live from EE</li>
+                        <li>• USGS 30m DEM for elevation at asset coords</li>
+                        <li>• Sentinel-1 SAR for radar backscatter evidence</li>
+                        <li>• Indicates potential flooding/inundation regions</li>
+                      </ul>
+                    </div>
+                    <div className="bg-[var(--bg-app)] border border-[var(--border)] rounded-lg p-5">
+                      <h4 className="text-xs font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2"><Activity size={14} /> VERTEX AI</h4>
+                      <div className="text-[11px] mb-2 font-bold text-blue-600">Predictive Impact Model (Optional)</div>
+                      <ul className="text-xs space-y-1 text-[var(--text-secondary)]">
+                        <li>• Machine learning predictive capabilities</li>
+                        <li>• Trained on historical failure events</li>
+                        <li>• Provides damage probability & severity</li>
+                        <li>• Only used if endpoint is actively deployed</li>
+                      </ul>
+                    </div>
+                    <div className="bg-[var(--bg-app)] border border-[var(--border)] rounded-lg p-5">
+                      <h4 className="text-xs font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2"><Brain size={14} /> GEMINI AI</h4>
+                      <div className="text-[11px] mb-2 font-bold text-blue-600">LLM Generation (gemini-flash)</div>
+                      <ul className="text-xs space-y-1 text-[var(--text-secondary)]">
+                        <li>• Interacts with structural simulation results</li>
+                        <li>• Identifies core reasons for specific asset risks</li>
+                        <li>• Generates human-readable situation briefings</li>
+                        <li>• Proposes timeline-based emergency actions</li>
+                      </ul>
+                    </div>
                   </div>
                 </section>
 
@@ -1468,36 +1470,36 @@ function App() {
                 <section>
                   <h3 className="text-[14px] font-bold text-[var(--text-primary)] mb-4 tracking-wide uppercase">Deterministic Risk Methodology</h3>
                   <div className="bg-blue-50/50 border border-blue-200 rounded-lg p-4 mb-6 text-blue-900 font-mono text-sm text-center font-bold">
-                     Risk Score = (Hazard × Exposure × Vulnerability) × Category Multiplier
+                    Risk Score = (Hazard × Exposure × Vulnerability) × Category Multiplier
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-                     <div>
-                        <strong className="text-xs text-[var(--text-primary)] block mb-1">1. HAZARD (0.0 to 1.0)</strong>
-                        <span className="text-xs">Based on wind intensity relative to category, rainfall amount, proximity to cyclone track, and topographic elevation (from EE).</span>
-                     </div>
-                     <div>
-                        <strong className="text-xs text-[var(--text-primary)] block mb-1">2. EXPOSURE (0.0 to 1.0)</strong>
-                        <span className="text-xs">Scaled by population served, inherent infrastructure criticality, and lack of alternative access routes.</span>
-                     </div>
-                     <div>
-                        <strong className="text-xs text-[var(--text-primary)] block mb-1">3. VULNERABILITY (0.0 to 1.0)</strong>
-                        <span className="text-xs">Asset-specific baseline physical vulnerability (retrieved from BigQuery), modified by asset age or structural type.</span>
-                     </div>
-                     <div>
-                        <strong className="text-xs text-[var(--text-primary)] block mb-1">4. MULTIPLIER</strong>
-                        <span className="text-xs">Critical infrastructure gets up to a 1.2x penalty. Scores are converted to a 0-100 scale.</span>
-                     </div>
+                    <div>
+                      <strong className="text-xs text-[var(--text-primary)] block mb-1">1. HAZARD (0.0 to 1.0)</strong>
+                      <span className="text-xs">Based on wind intensity relative to category, rainfall amount, proximity to cyclone track, and topographic elevation (from EE).</span>
+                    </div>
+                    <div>
+                      <strong className="text-xs text-[var(--text-primary)] block mb-1">2. EXPOSURE (0.0 to 1.0)</strong>
+                      <span className="text-xs">Scaled by population served, inherent infrastructure criticality, and lack of alternative access routes.</span>
+                    </div>
+                    <div>
+                      <strong className="text-xs text-[var(--text-primary)] block mb-1">3. VULNERABILITY (0.0 to 1.0)</strong>
+                      <span className="text-xs">Asset-specific baseline physical vulnerability (retrieved from BigQuery), modified by asset age or structural type.</span>
+                    </div>
+                    <div>
+                      <strong className="text-xs text-[var(--text-primary)] block mb-1">4. MULTIPLIER</strong>
+                      <span className="text-xs">Critical infrastructure gets up to a 1.2x penalty. Scores are converted to a 0-100 scale.</span>
+                    </div>
                   </div>
 
                   <div className="flex flex-wrap gap-3 items-center">
-                     <span className="text-xs font-bold mr-2 text-[var(--text-primary)]">THRESHOLDS:</span>
-                     <span className="px-3 py-1.5 bg-green-50 text-green-700 border border-green-200 rounded text-xs font-bold">0–20 LOW</span>
-                     <span className="px-3 py-1.5 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded text-xs font-bold">21–40 MEDIUM</span>
-                     <span className="px-3 py-1.5 bg-orange-50 text-orange-700 border border-orange-200 rounded text-xs font-bold">41–70 HIGH</span>
-                     <span className="px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded text-xs font-bold">71–100 CRITICAL</span>
+                    <span className="text-xs font-bold mr-2 text-[var(--text-primary)]">THRESHOLDS:</span>
+                    <span className="px-3 py-1.5 bg-green-50 text-green-700 border border-green-200 rounded text-xs font-bold">0–20 LOW</span>
+                    <span className="px-3 py-1.5 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded text-xs font-bold">21–40 MEDIUM</span>
+                    <span className="px-3 py-1.5 bg-orange-50 text-orange-700 border border-orange-200 rounded text-xs font-bold">41–70 HIGH</span>
+                    <span className="px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded text-xs font-bold">71–100 CRITICAL</span>
                   </div>
                   <div className="mt-4 pb-2 text-[11px] italic text-[var(--text-secondary)] leading-relaxed">
-                     * The deterministic Risk Engine is the single authoritative source for real-time calculation. Neither BigQuery nor Vertex AI overwrite these deterministic formulas.
+                    * The deterministic Risk Engine is the single authoritative source for real-time calculation. Neither BigQuery nor Vertex AI overwrite these deterministic formulas.
                   </div>
                 </section>
 
@@ -1505,26 +1507,26 @@ function App() {
                 <section>
                   <h3 className="text-[14px] font-bold text-[var(--text-primary)] mb-4 tracking-wide uppercase">Google AI & Data Services</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     {[
-                       { name: 'Google Earth Engine', role: 'Geospatial context', status: dataSourceStatus.earthEngine.toUpperCase(), desc: dataSourceStatus.earthEngine === 'connected' && geoContext ? `Provides real-world geospatial intelligence. Dataset: USGS/SRTMGL1_003. Assets sampled: ${Object.keys(geoContext).length}. Valid elevation samples: ${Object.values(geoContext).filter(c => c.elevationAvailable !== false).length}. Missing elevation samples: ${Object.values(geoContext).filter(c => c.elevationAvailable === false).length}.` : 'Provides real-world geospatial intelligence (elevation, coastal exposure) to enhance deterministic calculations.' },
-                       { name: 'Sentinel-1 (Earth Engine)', role: 'Satellite Evidence', status: satelliteEvidence ? (satelliteEvidence.status === 'connected' ? 'CONNECTED' : 'UNAVAILABLE') : 'STANDBY', desc: satelliteEvidence?.status === 'connected' ? `Provides radar backscatter metrics for the ROI. Dataset: ${satelliteEvidence.dataset}. Scenes available: ${satelliteEvidence.scenesAvailable}. Period: ${satelliteEvidence.analysisPeriod}. Comparison: ${satelliteEvidence.comparisonAvailable ? 'Available' : 'Unavailable'}.` : 'Analyzes Sentinel-1 radar imagery for empirical evidence.' },
-                       { name: 'BigQuery', role: 'Infrastructure Asset Data', status: dataSourceStatus.bigquery.toUpperCase(), desc: dataSourceStatus.bigquery.toUpperCase() === 'CONNECTED' ? `Connected to sanqum project. BigQuery provides the infrastructure asset feature layer used by the deterministic risk engine. ${assetCount} verified records available.` : 'Currently unavailable. BigQuery acts as the primary data warehouse, providing verified historical infrastructure asset records, baseline vulnerability, and criticality scores.' },
-                       { name: 'Vertex AI', role: 'Predictive impact layer', status: dataSourceStatus.vertexAI === 'CONNECTED' ? 'CONNECTED' : (dataSourceStatus.vertexAI === 'CONFIGURED' ? 'STANDBY' : 'UNAVAILABLE'), desc: dataSourceStatus.vertexAI === 'CONNECTED' ? 'Predictive model is actively generating impact probabilities.' : 'Currently unavailable or on standby. Vertex AI provides ML-based predictive analysis of asset failure probabilities based on historical cyclone damage data. Requires a trained model and deployed endpoint.' },
-                       { name: 'Gemini', role: 'Risk interpretation and operational action planning', status: dataSourceStatus.gemini === 'CONNECTED' ? 'CONNECTED' : (dataSourceStatus.gemini === 'CONFIGURED' ? 'STANDBY' : (dataSourceStatus.gemini === 'NOT_CONFIGURED' ? 'NOT CONFIGURED' : 'UNAVAILABLE')), desc: 'Interprets deterministic results and generates operational guidance. Will fallback to deterministic rule-based generation if unavailable or quota-limited.' }
-                     ].map(svc => (
-                       <div key={svc.name} className="flex flex-col border border-[var(--border)] rounded-lg p-5 bg-[var(--bg-app)]">
-                          <div className="flex justify-between items-start mb-3">
-                             <div>
-                               <strong className="text-sm text-[var(--text-primary)] block mb-1">{svc.name}</strong>
-                               <span className="text-[11px] font-semibold text-blue-600">{svc.role}</span>
-                             </div>
-                             <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${svc.status === 'CONNECTED' ? 'bg-green-100 text-green-700' : svc.status === 'UNAVAILABLE' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-700'}`}>
-                               {svc.status}
-                             </span>
+                    {[
+                      { name: 'Google Earth Engine', role: 'Geospatial context', status: dataSourceStatus.earthEngine.toUpperCase(), desc: dataSourceStatus.earthEngine === 'connected' && geoContext ? `Provides real-world geospatial intelligence. Dataset: USGS/SRTMGL1_003. Assets sampled: ${Object.keys(geoContext).length}. Valid elevation samples: ${Object.values(geoContext).filter(c => c.elevationAvailable !== false).length}. Missing elevation samples: ${Object.values(geoContext).filter(c => c.elevationAvailable === false).length}.` : 'Provides real-world geospatial intelligence (elevation, coastal exposure) to enhance deterministic calculations.' },
+                      { name: 'Sentinel-1 (Earth Engine)', role: 'Satellite Evidence', status: satelliteEvidence ? (satelliteEvidence.status === 'connected' ? 'CONNECTED' : 'UNAVAILABLE') : 'STANDBY', desc: satelliteEvidence?.status === 'connected' ? `Provides radar backscatter metrics for the ROI. Dataset: ${satelliteEvidence.dataset}. Scenes available: ${satelliteEvidence.scenesAvailable}. Period: ${satelliteEvidence.analysisPeriod}. Comparison: ${satelliteEvidence.comparisonAvailable ? 'Available' : 'Unavailable'}.` : 'Analyzes Sentinel-1 radar imagery for empirical evidence.' },
+                      { name: 'BigQuery', role: 'Infrastructure Asset Data', status: dataSourceStatus.bigquery.toUpperCase(), desc: dataSourceStatus.bigquery.toUpperCase() === 'CONNECTED' ? `Connected to sanqum project. BigQuery provides the infrastructure asset feature layer used by the deterministic risk engine. ${assetCount} verified records available.` : 'Currently unavailable. BigQuery acts as the primary data warehouse, providing verified historical infrastructure asset records, baseline vulnerability, and criticality scores.' },
+                      { name: 'Vertex AI', role: 'Predictive impact layer', status: dataSourceStatus.vertexAI === 'CONNECTED' ? 'CONNECTED' : (dataSourceStatus.vertexAI === 'CONFIGURED' ? 'STANDBY' : 'UNAVAILABLE'), desc: dataSourceStatus.vertexAI === 'CONNECTED' ? 'Predictive model is actively generating impact probabilities.' : 'Currently unavailable or on standby. Vertex AI provides ML-based predictive analysis of asset failure probabilities based on historical cyclone damage data. Requires a trained model and deployed endpoint.' },
+                      { name: 'Gemini', role: 'Risk interpretation and operational action planning', status: dataSourceStatus.gemini === 'CONNECTED' ? 'CONNECTED' : (dataSourceStatus.gemini === 'CONFIGURED' ? 'STANDBY' : (dataSourceStatus.gemini === 'NOT_CONFIGURED' ? 'NOT CONFIGURED' : 'UNAVAILABLE')), desc: 'Interprets deterministic results and generates operational guidance. Will fallback to deterministic rule-based generation if unavailable or quota-limited.' }
+                    ].map(svc => (
+                      <div key={svc.name} className="flex flex-col border border-[var(--border)] rounded-lg p-5 bg-[var(--bg-app)]">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <strong className="text-sm text-[var(--text-primary)] block mb-1">{svc.name}</strong>
+                            <span className="text-[11px] font-semibold text-blue-600">{svc.role}</span>
                           </div>
-                          <div className="text-xs text-[var(--text-secondary)]">{svc.desc}</div>
-                       </div>
-                     ))}
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${svc.status === 'CONNECTED' ? 'bg-green-100 text-green-700' : svc.status === 'UNAVAILABLE' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-700'}`}>
+                            {svc.status}
+                          </span>
+                        </div>
+                        <div className="text-xs text-[var(--text-secondary)]">{svc.desc}</div>
+                      </div>
+                    ))}
                   </div>
                 </section>
 
@@ -1532,35 +1534,35 @@ function App() {
                 <section>
                   <h3 className="text-[14px] font-bold text-[var(--text-primary)] mb-4 tracking-wide uppercase">Data Provenance</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8 text-sm">
-                     <div>
-                        <strong className="block text-[var(--text-primary)] mb-2">CURRENT SIMULATION INPUTS</strong>
-                        <ul className="list-disc pl-5 space-y-1">
-                          <li>Scenario parameters</li>
-                          <li>Infrastructure asset data</li>
-                          <li>Deterministic risk calculations</li>
-                        </ul>
-                     </div>
-                     <div>
-                        <strong className="block text-[var(--text-primary)] mb-2">GEOSPATIAL CONTEXT</strong>
-                        <ul className="list-disc pl-5 space-y-1">
-                          <li>Earth Engine when connected</li>
-                          <li>Demo/fallback state when unavailable</li>
-                        </ul>
-                     </div>
-                     <div>
-                        <strong className="block text-[var(--text-primary)] mb-2">PREDICTIVE LAYER</strong>
-                        <ul className="list-disc pl-5 space-y-1">
-                          <li>BigQuery historical features</li>
-                          <li>Vertex AI model only when a genuine trained model is available</li>
-                        </ul>
-                     </div>
-                     <div>
-                        <strong className="block text-[var(--text-primary)] mb-2">AI REASONING</strong>
-                        <ul className="list-disc pl-5 space-y-1">
-                          <li>Gemini when available</li>
-                          <li>Deterministic fallback when Gemini is unavailable</li>
-                        </ul>
-                     </div>
+                    <div>
+                      <strong className="block text-[var(--text-primary)] mb-2">CURRENT SIMULATION INPUTS</strong>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Scenario parameters</li>
+                        <li>Infrastructure asset data</li>
+                        <li>Deterministic risk calculations</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <strong className="block text-[var(--text-primary)] mb-2">GEOSPATIAL CONTEXT</strong>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Earth Engine when connected</li>
+                        <li>Demo/fallback state when unavailable</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <strong className="block text-[var(--text-primary)] mb-2">PREDICTIVE LAYER</strong>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>BigQuery historical features</li>
+                        <li>Vertex AI model only when a genuine trained model is available</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <strong className="block text-[var(--text-primary)] mb-2">AI REASONING</strong>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Gemini when available</li>
+                        <li>Deterministic fallback when Gemini is unavailable</li>
+                      </ul>
+                    </div>
                   </div>
                 </section>
 
@@ -1569,11 +1571,11 @@ function App() {
                   <h3 className="text-[14px] font-bold text-[var(--text-primary)] mb-4 tracking-wide uppercase">Model Boundaries</h3>
                   <div className="bg-[var(--bg-app)] border border-[var(--border)] rounded-lg p-5">
                     <ul className="list-disc pl-5 space-y-3 text-sm text-[var(--text-secondary)]">
-                       <li>CycloneShield is a scenario-based infrastructure decision-support system, not a cyclone forecasting system.</li>
-                       <li>The deterministic Risk Engine produces the current authoritative risk score.</li>
-                       <li>Vertex AI is a predictive extension and requires genuine labelled historical data and a deployed model.</li>
-                       <li>Gemini interprets structured simulation outputs and should not modify deterministic risk scores.</li>
-                       <li>Geospatial context may operate in DEMO/FALLBACK mode when the external service is unavailable.</li>
+                      <li>CycloneShield is a scenario-based infrastructure decision-support system, not a cyclone forecasting system.</li>
+                      <li>The deterministic Risk Engine produces the current authoritative risk score.</li>
+                      <li>Vertex AI is a predictive extension and requires genuine labelled historical data and a deployed model.</li>
+                      <li>Gemini interprets structured simulation outputs and should not modify deterministic risk scores.</li>
+                      <li>Geospatial context may operate in DEMO/FALLBACK mode when the external service is unavailable.</li>
                     </ul>
                   </div>
                 </section>
