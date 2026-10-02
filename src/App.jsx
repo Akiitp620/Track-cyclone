@@ -255,33 +255,47 @@ function App() {
   const handleSimulate = async () => {
     setIsSimulating(true);
 
-    try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    // Apply the scenario immediately so the risk engine can calculate results.
+    setScenario({
+      windSpeed: draftWindSpeed,
+      radius: draftRadius,
+      rainfall: draftRainfall,
+      trackShift: draftTrackShift,
+      category: getScenarioCategory(draftWindSpeed)
+    });
 
-      const satResponse = await fetch(`${API_BASE_URL}/api/satellite-evidence`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assets })
-      });
+    setHasSimulated(true);
+    setIsSimulating(false);
+
+    // Fetch Sentinel-1 evidence separately so it does not block simulation completion.
+    try {
+      const API_BASE_URL =
+        import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+      const satResponse = await fetch(
+        `${API_BASE_URL}/api/satellite-evidence`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ assets })
+        }
+      );
+
       const satData = await satResponse.json();
       setSatelliteEvidence(satData);
     } catch (err) {
-      console.error("Satellite evidence fetch error:", err);
-    }
+      console.error('Satellite evidence fetch error:', err);
 
-    setTimeout(() => {
-      setScenario({
-        windSpeed: draftWindSpeed,
-        radius: draftRadius,
-        rainfall: draftRainfall,
-        trackShift: draftTrackShift,
-        category: getScenarioCategory(draftWindSpeed)
+      setSatelliteEvidence({
+        status: 'unavailable',
+        reason: 'Satellite evidence could not be loaded.'
       });
-
-      setIsSimulating(false);
-      setHasSimulated(true);
-    }, 400);
+    }
   };
+
+
 
   const applyPreset = preset => {
     if (preset === 'MODERATE') {
@@ -1080,9 +1094,10 @@ function App() {
 
           {/* SCENARIO SIMULATOR */}
           {activeTab === 'SCENARIO SIMULATOR' && (
-            <div className="dashboard-grid" style={{ gridTemplateColumns: '400px 1fr', height: '100%' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto' }}>
-                <div className="panel" style={{ display: 'flex', flexDirection: 'column', minHeight: 0, flexShrink: 1 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div className="dashboard-grid" style={{ gridTemplateColumns: '400px 1fr', alignItems: 'start' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minWidth: 0 }}>
+                  <div className="panel" style={{ display: 'flex', flexDirection: 'column' }}>
                   <div className="panel-header">
                     <div className="panel-title">
                       <SlidersHorizontal size={16} color="var(--text-secondary)" />
@@ -1095,7 +1110,7 @@ function App() {
                     </div>
                   </div>
 
-                  <div className="panel-body" style={{ overflowY: 'auto', paddingBottom: '12px' }}>
+                  <div className="panel-body" style={{ paddingBottom: '12px' }}>
                     {/* Cyclone Intensity */}
                     <div className="control-group">
                       <div className="control-label">
@@ -1193,55 +1208,11 @@ function App() {
                   </div>
                 </div>
 
-                {/* Satellite Evidence Panel */}
-                {satelliteEvidence && (
-                  <div className="panel border border-[var(--border)] mt-4">
-                    <div className="flex items-center justify-between mb-4 pb-4 border-b border-[var(--border)]">
-                      <div className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
-                        <Globe size={14} color="var(--text-secondary)" />
-                        SATELLITE EVIDENCE (SENTINEL-1)
-                      </div>
-                      <div className={`text-[10px] font-bold uppercase tracking-wider ${satelliteEvidence.status === 'connected' ? 'text-green-500' : 'text-slate-500'}`}>
-                        {satelliteEvidence.status === 'connected' ? 'AVAILABLE' : 'UNAVAILABLE'}
-                      </div>
-                    </div>
 
-                    {satelliteEvidence.status === 'connected' ? (
-                      <div className="flex flex-col gap-2">
-                        <div className="grid grid-cols-2 gap-3 mb-2">
-                          <div className="bg-[var(--bg-app)] p-3 rounded-lg border border-[var(--border)]">
-                            <div className="text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-wider mb-1">Scenes Found</div>
-                            <div className="text-lg font-bold text-[var(--text-primary)] leading-none">{satelliteEvidence.scenesAvailable}</div>
-                          </div>
-                          <div className="bg-[var(--bg-app)] p-3 rounded-lg border border-[var(--border)]">
-                            <div className="text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-wider mb-1">Median Backscatter</div>
-                            <div className="text-lg font-bold text-[var(--text-primary)] leading-none">
-                              {satelliteEvidence.metrics?.medianBackscatterDb != null ? `${satelliteEvidence.metrics.medianBackscatterDb.toFixed(2)} dB` : '—'}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex justify-between items-center p-2 bg-[var(--bg-app)] rounded border border-[var(--border)]">
-                          <span className="text-xs font-medium text-[var(--text-primary)]">Analysis Period</span>
-                          <span className="text-[11px] font-bold text-[var(--text-secondary)]">{satelliteEvidence.analysisPeriod}</span>
-                        </div>
-                        <div className="flex justify-between items-center p-2 bg-[var(--bg-app)] rounded border border-[var(--border)]">
-                          <span className="text-xs font-medium text-[var(--text-primary)]">Temporal Comparison</span>
-                          <span className="text-[11px] font-bold text-[var(--text-secondary)]">
-                            {satelliteEvidence.comparisonAvailable ? 'AVAILABLE (≥2 SCENES)' : 'UNAVAILABLE'}
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-xs text-[var(--text-secondary)] p-3 bg-[var(--bg-app)] rounded border border-[var(--border)] text-center">
-                        {satelliteEvidence.reason || 'Evidence currently unavailable.'}
-                      </div>
-                    )}
-                  </div>
-                )}
 
               </div>
 
-              <div className="panel" style={{ height: '100%' }}>
+              <div className="panel" style={{ height: '680px', minHeight: '680px' }}>
                 <div className="panel-header">
                   <div className="panel-title">
                     <MapIcon size={16} color="var(--text-secondary)" />
@@ -1275,6 +1246,53 @@ function App() {
                 </div>
               </div>
             </div>
+
+            {/* Satellite Evidence Panel */}
+            {satelliteEvidence && (
+              <div className="panel border border-[var(--border)] mt-4">
+                <div className="flex items-center justify-between mb-4 pb-4 border-b border-[var(--border)]">
+                  <div className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
+                    <Globe size={14} color="var(--text-secondary)" />
+                    SATELLITE EVIDENCE (SENTINEL-1)
+                  </div>
+                  <div className={`text-[10px] font-bold uppercase tracking-wider ${satelliteEvidence.status === 'connected' ? 'text-green-500' : 'text-slate-500'}`}>
+                    {satelliteEvidence.status === 'connected' ? 'AVAILABLE' : 'UNAVAILABLE'}
+                  </div>
+                </div>
+
+                {satelliteEvidence.status === 'connected' ? (
+                  <div className="flex flex-col gap-2">
+                    <div className="grid grid-cols-2 gap-3 mb-2">
+                      <div className="bg-[var(--bg-app)] p-3 rounded-lg border border-[var(--border)]">
+                        <div className="text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-wider mb-1">Scenes Found</div>
+                        <div className="text-lg font-bold text-[var(--text-primary)] leading-none">{satelliteEvidence.scenesAvailable}</div>
+                      </div>
+                      <div className="bg-[var(--bg-app)] p-3 rounded-lg border border-[var(--border)]">
+                        <div className="text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-wider mb-1">Median Backscatter</div>
+                        <div className="text-lg font-bold text-[var(--text-primary)] leading-none">
+                          {satelliteEvidence.metrics?.medianBackscatterDb != null ? `${satelliteEvidence.metrics.medianBackscatterDb.toFixed(2)} dB` : '—'}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center p-2 bg-[var(--bg-app)] rounded border border-[var(--border)]">
+                      <span className="text-xs font-medium text-[var(--text-primary)]">Analysis Period</span>
+                      <span className="text-[11px] font-bold text-[var(--text-secondary)]">{satelliteEvidence.analysisPeriod}</span>
+                    </div>
+                    <div className="flex justify-between items-center p-2 bg-[var(--bg-app)] rounded border border-[var(--border)]">
+                      <span className="text-xs font-medium text-[var(--text-primary)]">Temporal Comparison</span>
+                      <span className="text-[11px] font-bold text-[var(--text-secondary)]">
+                        {satelliteEvidence.comparisonAvailable ? 'AVAILABLE (≥2 SCENES)' : 'UNAVAILABLE'}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-xs text-[var(--text-secondary)] p-3 bg-[var(--bg-app)] rounded border border-[var(--border)] text-center">
+                    {satelliteEvidence.reason || 'Evidence currently unavailable.'}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
           )}
 
 
